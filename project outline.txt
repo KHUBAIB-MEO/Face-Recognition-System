@@ -1,0 +1,12 @@
+SCREENS
+1) welcome screen
+2) admin login screen
+3) main content screen
+4) regiter face screen
+
+FUNCTIONS
+1) admin login with user and password
+2) admin login with face
+3) search face funciton
+4) regiter face function
+5) mark attendence function in excecl sheet
