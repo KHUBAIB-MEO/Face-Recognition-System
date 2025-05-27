@@ -1,11 +1,9 @@
+from deepface import DeepFace  # type: ignore
 import cv2  # type: ignore
 import os
 import sys
 import json
 import contextlib
-import datetime
-import pandas as pd  # type: ignore
-from deepface import DeepFace  # type: ignore
 from dialogbox import dialogBox
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -19,23 +17,6 @@ def suppress_stdout():
             yield
         finally:
             sys.stdout = old_stdout
-
-def mark_attendance(sid, name):
-    date_str = datetime.datetime.now().strftime("%Y-%m-%d")
-    time_str = datetime.datetime.now().strftime("%H:%M:%S")
-    filename = f"attendance_{date_str}.xlsx"
-
-    # Load existing data or create new
-    if os.path.exists(filename):
-        df = pd.read_excel(filename)
-    else:
-        df = pd.DataFrame(columns=["SID", "Name", "Date", "Time"])
-
-    # Avoid duplicate attendance for the day
-    if not ((df["SID"] == sid) & (df["Date"] == date_str)).any():
-        new_entry = pd.DataFrame([[sid, name, date_str, time_str]], columns=["SID", "Name", "Date", "Time"])
-        df = pd.concat([df, new_entry], ignore_index=True)
-        df.to_excel(filename, index=False)
 
 def searchFace():
     cam = cv2.VideoCapture(0)
@@ -75,25 +56,16 @@ def searchFace():
                 json_path = os.path.join("faces", name_without_ext + ".json")
 
                 info_lines = [f"Name: {name_without_ext}"]
-                sid = name_without_ext
-                name = name_without_ext
-
                 if os.path.exists(json_path):
                     with open(json_path, "r") as f:
                         data = json.load(f)
-                    name = data.get("name", name).strip()
-                    sid = data.get("SID", sid).strip()
                     info_lines = [
-                        f"Name: {name}",
+                        f"Name: {data.get('name', '').strip()}",
                         f"Age: {data.get('age', '').strip()}",
                         f"Semester: {data.get('semester', '').strip()}",
                         f"University: {data.get('university', '').strip()}",
                         f"Program: {data.get('program', '').strip()}"
                     ]
-
-                    # Mark attendance
-                    mark_attendance(sid, name)
-
             else:
                 color = (0, 0, 255)
                 info_lines = ["No Match"]
